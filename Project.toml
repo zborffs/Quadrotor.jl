@@ -1,7 +1,15 @@
 name = "Quadrotor"
 uuid = "327f1d27-1d8e-4515-a11a-795016fb3db2"
-authors = ["Zach Bortoff <zbortoff@gmail.com> and contributors"]
+authors = ["Zach Bortoff"]
 version = "0.1.0"
+
+[deps]
+BenchmarkTools = "6e4b80f9-dd63-53aa-95a3-0cdb28fa8baf"
+DifferentialEquations = "0c46a032-eb83-5123-abaf-570d42b7fbaa"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+Revise = "295af30f-e4ad-537b-8983-00126c2a3abe"
+Sundials = "c3572dad-4567-51f8-b174-8c6c989267f4"
+TeX = "79ba4951-f1d1-4432-a4f0-9b558427b7c8"
 
 [compat]
 julia = "1"
