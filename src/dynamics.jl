@@ -136,6 +136,49 @@ function quadrotor_dynamics!(dx, state, params, t)
     ]
 end
 
+function linear_quadrotor_dynamics!(dx, state, params, t)
+
+    # unpack model parameters into individual local variables
+    M = params.M
+    m = params.m
+    L = params.L
+    l = params.l
+    g = params.g
+
+    # unpack state vector into individual local variables
+    x = state[1] # x-pos wrt some fixed point
+    y = state[2] # y-pos wrt some fixed point
+    z = state[3] # z-pos wrt some fixed point
+    alpha = state[4] # yaw of the quadrotor in body-frame
+    beta = state[5] # pitch of the quadrotor in body-frame
+    gamma = state[6] # roll of the quadrotor in body-frame
+    xdot = state[7] # vel along x-axis wrt fixed space frame
+    ydot = state[8] # vel along y-axis wrt fixed space frame
+    zdot = state[9] # vel along z-axis wrt fixed space frame
+    alphadot = state[10] # yawspeed of quadrotor in body-frame
+    betadot = state[11] # pitchspeed of quadrotor in body-frame
+    gammadot = state[12] # rollspeed of quadrotor in body-frame
+
+    # get control input from controller
+    u = controller(state, params)
+    u0 = sqrt(1 / 4 * (M + 4 * m) * g) # equilibrium control
+
+    # quadrotor dynamics
+    xddot = 1 / (M + 4 * m) * (4 * u0^2 * beta)
+    yddot = 1 / (M + 4 * m) * (4 * u0^2 * gamma)
+    zddot = 1 / (M + 4 * m) * (2 * u0 * u[1] - 2 * u0 * u[2] + 2 * u0 * u[3] - 2 * u0 * u[4] - 8 * u0^2)
+
+    alphaddot = m * l / ((M + 4 * m) * L) * sum(u)
+    betaddot = 1 / m * (2 * u0 * u[1] - 2 * u0 * u[3])
+    gammaddot = 1 / m * (2 * u0 * u[2] - 2 * u0 * u[4])
+
+    # update equation
+    dx = [
+        xdot; ydot; zdot; alphadot; betadot; gammadot; 
+        xddot; yddot; zddot; alphaddot; betaddot; gammaddot
+    ]
+end
+
 """
     controller(state, params)
 
