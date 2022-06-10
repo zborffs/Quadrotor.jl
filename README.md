@@ -4,8 +4,8 @@ Model-based control of a quadrotor
 
 Objectives
 ----------
-1. Learn about quadrotor dynamics
-2. Practice designing state feedback controllers and observers
+1. ~~Learn about quadrotor dynamics~~
+2. ~~Practice designing state feedback controllers and observers~~
 3. Practice writing good Julia code
 4. Learn about and practice designing H-infinity controllers
 5. Learn about model-predictive control for higher-level navigation
@@ -178,8 +178,8 @@ ans =
 
 The controller still works for the linear system, and now the controller works for various small perturbations in the state variables for the non-linear system as well. This probably has to do with improving the robustness of the closed-loop system. The LQR controller guarantees a 60 degree phase-margin, for example.
 
-Plain State-Feedback with Integral Action Design (Second Attempt)
------------------------------------------------------------------
+Plain State-Feedback with Integral Action Design
+------------------------------------------------
 We are currently capable of bringing the system back to the equilibrium position. This is good if we want to reject disturbances and noise, but insufficient if we want to have the quadrotor follow some trajectory. 
 
 In order to add trajectory following functionality, we need to augment the system with integral action. This requires defining the ```C``` and ```D``` matrices.
@@ -192,6 +192,9 @@ We need another program (in feedback with the output of the controlled system) t
 
 Model-Predictive Control (outer-loop controller)
 ------------------------------------------------
+The inner-loop of this control scheme is a full state-feedback controller augmented with integral action. This means, we can apply reference signals and send the system to position ```(1,1,1)``` for example and face ```0.123 (rad/s)``` w.r.t. some frame, and the system will go there, even if there are exogenous disturbances or noise over different channels, the controller should reject those (for the most part) and still bring the system to the desired position. 
+
+Now, the goal is to (without simulating noise or exogenous disturbances yet) design model-predictive controller in feedback with the system to bring the system to various positions in space. Then we will incorporate disturbances and noise. Then we will incorporate static obstacles. Then dynamic obstacles and try to perform obstacle avoidance. Finally, we will try to follow a target. Then we will try the non-linear system. 
 
 
 ------------------
