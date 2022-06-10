@@ -208,7 +208,7 @@ function controller(state, params)
     # equilibrium control (manually computed so a bit of a magic expression)
     u0 = sqrt(1 / 4 * (M + 4 * m) * g)
 
-    # Control Matrix (manually computer so a bit of a magic number)
+    # Control Matrix (manually computed so a bit of a magic number)
     K = [
         0.7071     0.0000    0.5000   15.8114   24.0083   -0.0000    1.9902    0.0000    0.6546    7.2770    1.9819   -0.0000;
         0.0000     0.7071   -0.5000   15.8114   -0.0000   24.0083    0.0000    1.9902   -0.6546    7.2770    0.0000    1.9819;
@@ -218,9 +218,7 @@ function controller(state, params)
 
     # standard plain state-feedback control law
     delta_u = -K * state;
-
-    # add the equilibrium since this is a linearization with an offset
-    return delta_u .+ u0
+    return delta_u # .+ u0
 end
 
 """
