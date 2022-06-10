@@ -23,7 +23,7 @@ Finally, we need to define five system parameters, namely: (1) the mass of the f
 
 Linearization
 -------------
-
+Followed standard linearization procedure.
 
 Plain State-Feedback Design (First Attempt)
 -------------------------------------------
@@ -174,7 +174,7 @@ ans =
   -0.4153 + 0.3571i
   -0.4153 - 0.3571i
 ```
-- Some notes: interestingly, the controller gains of the LQR controller are much smaller than those for the pole placement controller. There are many more zero entries in the controller as well. All of the closed-loop system poles are in the OLHP.
+- Some notes:  There are many more zero entries in the controller as well. All of the closed-loop system poles are in the OLHP.
 
 The controller still works for the linear system, and now the controller works for various small perturbations in the state variables for the non-linear system as well. This probably has to do with improving the robustness of the closed-loop system. The LQR controller guarantees a 60 degree phase-margin, for example.
 
@@ -182,11 +182,16 @@ Plain State-Feedback with Integral Action Design (Second Attempt)
 -----------------------------------------------------------------
 We are currently capable of bringing the system back to the equilibrium position. This is good if we want to reject disturbances and noise, but insufficient if we want to have the quadrotor follow some trajectory. 
 
-I *think* one way of incorporating that functionality would be to augment the current state-feedback controller with integral action. Then we can apply references to the system and see if the controller will bring the system to those references. It's also possible that my choice of equilibrium is wrong or doesn't entirely capture what we want, but let's start with this.
+In order to add trajectory following functionality, we need to augment the system with integral action. This requires defining the ```C``` and ```D``` matrices.
 
-Actually, we need to define the ```C``` and ```D``` matrices in order to incorporate the integral action. I can either just assume we are directly measuring all the state variables or we can be more accurate and flesh out the non-linear measurement model.
+It turns out that, in order to guarantee observability for the (0,0,0,...,0,0) equilibrium point, we only need ```C``` defined over the ```(x,y,z,alpha)``` variables. This has to do with the fact that, in the case of the linear model, ```(x,y,z,alpha)``` don't factor into the dynamics at all. In other words, exogenous signals cannot perturb those variables so we can't reconstruct what those variables are just from perturbing the system. Taking a step back and thinking about how this relates to the actual system, the quadrotor cannot tell where it is with respect to some fixed (or moving) space-frame (i.e. the ```(x,y,z)``` coordinates). Whether it's at ```(0,0,0)``` or ```(12.3, -0.9, 0)``` makes no difference to the dynamics, and, by extension, makes no difference to the amount of effort required to stay in that position in space, so there is no way of inferring we are at position ```(12.3, -0.9, 0)```. So the quadrotor needs some external source telling it, "you are at position ```(1,2,3)``` to infer where it is in space w.r.t. some frame. The same goes for the yaw (i.e. ```(alpha```). It makes no difference to the linear dynamics which way the quadrotor is facing w.r.t some frame. So it needs someone to tell it, "you are facing 0.123 radians" w.r.t some frame to know that. 
 
-Okay. So first I'm going to backtrack a little bit and get the Julia animation code up and running. Then, I'm going to use the Symbolics library to automatically generate all the dynamics. Next, I'm going to have to find some control packages that will allow me to basically mimic all the MATLAB control analysis i've done so far... If none exist, then that's fine, I don't really want to waste my time writing those tools, so I'll just move on, but import that code into this repo just for completeness. Once all of that is done, I think the next step will be to flesh out the ```C``` and ```D``` matrices a bit by defining some semi-realistic measurement model (possibly requiring some sort of linearization). This will allow me to add integral action into the controller, which, I *think* will be the first step in tracking some trajectories (at least with the linear model). Maybe I should look at some other measures of robustness and see if there is a correlation between the failings of the nonlinear model and those values... Not sure how I would do that yet, but I believe that if I were to improve the robustness of the quadrotor model, I'd be able to better handle the nonlinear system. But the linear parameter varying seems cool to me too (or nonlinear parameter varying for that matter).
+For simplicity, I defined ```C``` to be the minimal. From there it is a straightforward procedure for desiging an observer and controller using LQR and pole placement. As a consequence of ```C``` only being defined over ```(x,y,z,alpha)``` we cannot give reference signals for the system for any other signals but those four. All we can do is say, "go to position ```(0,0,12,0.123)```" and the controller will take care of figuring out how to get there. The main drawback of this is, we cannot control the speed with which we are taken to positions or by how much we perturb the pitch or roll or whatever, but this is also a benefit, because ultimately, we may only want to move it from position to position and let the controller take care of how to bring it there while remaining airborne and stable.
+
+We need another program (in feedback with the output of the controlled system) to tell the quadrotor where to go to accomplish some mission. A model predictive controller would do the job, but might be overkill, but let's try writing the code for one.
+
+Model-Predictive Control (outer-loop controller)
+------------------------------------------------
 
 
 ------------------
