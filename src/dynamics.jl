@@ -16,10 +16,6 @@ struct QuadrotorParameters
 end
 
 
-#=
-quadrotor_dynamics! is the ODE update function implementing the 
-nonlinear quadrotor dynamics
-=#
 """
     quadrotor_dynamics!(dx, state, params, t)
 
@@ -130,12 +126,17 @@ function quadrotor_dynamics!(dx, state, params, t)
     gammaddot = 1 / m * (u[2]^2 - u[4]^2)
 
     # update equation
-    dx = [
+    dx[1:12] = [
         xdot; ydot; zdot; alphadot; betadot; gammadot; 
         xddot; yddot; zddot; alphaddot; betaddot; gammaddot
     ]
 end
 
+"""
+    linear_quadrotor_dynamics!(dx, state, params, t)
+
+
+"""
 function linear_quadrotor_dynamics!(dx, state, params, t)
 
     # unpack model parameters into individual local variables
@@ -173,7 +174,7 @@ function linear_quadrotor_dynamics!(dx, state, params, t)
     gammaddot = 1 / m * (2 * u0 * u[2] - 2 * u0 * u[4])
 
     # update equation
-    dx = [
+    dx[1:12] = [
         xdot; ydot; zdot; alphadot; betadot; gammadot; 
         xddot; yddot; zddot; alphaddot; betaddot; gammaddot
     ]
@@ -222,6 +223,8 @@ function controller(state, params)
     return delta_u .+ u0
 end
 
+"""
+"""
 function animate(sol)
     # definte animation limits to be +/-2.5 meters in each direction (x,y,z)
     axis_limits = 2.5
